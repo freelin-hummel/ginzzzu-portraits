@@ -2,7 +2,7 @@
   "id": "ginzzzu-portraits",
   "title": "Ginzzzu's Portraits & NPC Dock",
   "description": "System-agnostic actor's portraits and NPC dock.",
-  "version": "2.0.2",
+  "version": "2.1.0",
   "library": "false",
   "socket": true,
   "compatibility": {

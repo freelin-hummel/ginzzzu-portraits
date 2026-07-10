@@ -1,5 +1,5 @@
 // features/portraitConfig.js
-import { MODULE_ID, FLAG_DISPLAY_NAME, FLAG_CUSTOM_EMOTIONS, EMOTION_MOTIONS, EMOTION_COLORS, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_PORTRAIT_HEIGHT_MULTIPLIER, FLAG_PORTRAIT_CUSTOM_IMAGE, FLAG_PORTRAIT_BREATHING_MULTIPLIER } from "../core/constants.js";
+import { MODULE_ID, FLAG_DISPLAY_NAME, FLAG_CUSTOM_EMOTIONS, EMOTION_MOTIONS, EMOTION_COLORS, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_PORTRAIT_HEIGHT_MULTIPLIER, FLAG_PORTRAIT_CUSTOM_IMAGE, FLAG_PORTRAIT_BREATHING_MULTIPLIER, FLAG_PORTRAIT_FRAME_STYLE, FLAG_PORTRAIT_FRAME_IMAGE, FLAG_PORTRAIT_FRAME_PADDING, FLAG_PORTRAIT_FRAME_FIT } from "../core/constants.js";
 import { getCustomEmotions } from "./custom-emotions.js";
 
 const PORTRAIT_CONFIG_TEMPLATE = `modules/${MODULE_ID}/templates/portrait-config.hbs`;
@@ -66,6 +66,21 @@ export async function configurePortrait(ev, actorSheet) {
   const currentCustomImageRaw = foundry.utils.getProperty(actor, FLAG_PORTRAIT_CUSTOM_IMAGE);
   const currentCustomImage = typeof currentCustomImageRaw === "string" ? currentCustomImageRaw : "";
 
+  const frameStyle = String(foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_STYLE) || "none");
+  const frameImage = String(foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_IMAGE) || "");
+  const framePaddingRaw = Number(foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_PADDING));
+  const framePadding = Number.isFinite(framePaddingRaw) ? Math.max(0, Math.min(20, framePaddingRaw)) : 5;
+  const frameFit = foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_FIT) === "cover" ? "cover" : "contain";
+  const frameOptions = [
+    ["none", "None"], ["minimal", "Minimal"], ["tech", "Tech"],
+    ["target", "Target"], ["amber", "Amber"], ["custom", "Custom image"]
+  ].map(([value, label]) => ({ value, label, selected: value === frameStyle }));
+  const frameFitOptions = ["contain", "cover"].map(value => ({
+    value,
+    label: value === "contain" ? "Fit inside" : "Fill frame",
+    selected: value === frameFit
+  }));
+
   const templateData = {
     MODULE_ID,
 
@@ -90,6 +105,11 @@ export async function configurePortrait(ev, actorSheet) {
     portraitHeightMultiplier: currentHeightMultiplier,
     portraitBreathingMultiplier: currentBreathingMultiplier,
     portraitCustomImage: currentCustomImage,
+    frameStyle,
+    frameImage,
+    framePadding,
+    frameOptions,
+    frameFitOptions,
     showStandardEmotions,
 
     // Списки
@@ -168,6 +188,21 @@ export async function configurePortrait(ev, actorSheet) {
               } else {
                 await actor.setFlag(MODULE_ID, "portraitCustomImage", customImageValue);
               }
+
+              const selectedFrameStyle = String(html.find('select[name="frameStyle"]').val() || "none");
+              const selectedFrameImage = String(html.find('input[name="frameImage"]').val() || "").trim();
+              const selectedFramePadding = Math.max(0, Math.min(20, Number(html.find('input[name="framePadding"]').val()) || 0));
+              const selectedFrameFit = html.find('select[name="frameFit"]').val() === "cover" ? "cover" : "contain";
+              await actor.update({
+                flags: {
+                  [MODULE_ID]: {
+                    frameStyle: selectedFrameStyle,
+                    frameImage: selectedFrameImage,
+                    framePadding: selectedFramePadding,
+                    frameFit: selectedFrameFit
+                  }
+                }
+              });
 
               // Save "show standard emotions" toggle (default true)
               const showStd = html.find('input[name="showStandardEmotions"]').is(':checked');
@@ -348,12 +383,31 @@ export async function configurePortrait(ev, actorSheet) {
             });
         };
 
+        const bindFrameImagePicker = (root) => {
+          root.find('.portrait-frame-image-picker')
+            .off('click.ginzzzuFrameFile')
+            .on('click.ginzzzuFrameFile', (e) => {
+              e.preventDefault();
+              const $input = $(e.currentTarget).siblings('input[name="frameImage"]');
+              new FilePicker({
+                type: "image",
+                current: $input.val() || "",
+                callback: (path) => $input.val(path).trigger("change")
+              }).render(true);
+            });
+        };
+
         // Уже отрендеренные эмоции
         bindRemoveHandlers(html);
         bindToggleHandlers(html);
         bindMoveHandlers(html);
         bindFilePickers(html);
         bindPortraitImagePicker(html);
+        bindFrameImagePicker(html);
+
+        html.find('input[name="framePadding"]').on('input change', (e) => {
+          html.find('.frame-padding-output').text(`${Number(e.currentTarget.value) || 0}%`);
+        });
 
         // Синхронизация слайдера высоты портрета с отображением значения (двунаправленная)
         const portraitHeightSlider = html.find('input[name="portraitHeightMultiplier"][type="range"]');

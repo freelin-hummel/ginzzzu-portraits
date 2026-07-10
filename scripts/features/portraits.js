@@ -1,4 +1,4 @@
-import { MODULE_ID, FLAG_MODULE, FLAG_PORTRAIT_SHOWN, FLAG_CUSTOM_EMOTIONS, FLAG_DISPLAY_NAME, FLAG_PORTRAIT_EMOTION, FLAG_PORTRAIT_HEIGHT_MULTIPLIER, FLAG_EMOTION_HEIGHT_MULTIPLIER, FLAG_PORTRAIT_CUSTOM_IMAGE, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_PORTRAIT_BREATHING_MULTIPLIER, EMOTIONS } from "../core/constants.js";
+import { MODULE_ID, FLAG_MODULE, FLAG_PORTRAIT_SHOWN, FLAG_CUSTOM_EMOTIONS, FLAG_DISPLAY_NAME, FLAG_PORTRAIT_EMOTION, FLAG_PORTRAIT_HEIGHT_MULTIPLIER, FLAG_EMOTION_HEIGHT_MULTIPLIER, FLAG_PORTRAIT_CUSTOM_IMAGE, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_PORTRAIT_BREATHING_MULTIPLIER, FLAG_PORTRAIT_FRAME_STYLE, FLAG_PORTRAIT_FRAME_IMAGE, FLAG_PORTRAIT_FRAME_PADDING, FLAG_PORTRAIT_FRAME_FIT, EMOTIONS } from "../core/constants.js";
 import { configurePortrait } from "./portrait-config.js";
 import {
   PORTRAIT_KEYBINDINGS,
@@ -91,6 +91,30 @@ var __name = (target, value) => __defProp(target, "name", { value, configurable:
     }
 
     return baseImg;
+  }
+
+  const PORTRAIT_FRAME_STYLES = new Set(["none", "minimal", "tech", "target", "amber", "custom"]);
+
+  function _applyPortraitFrame(wrapper, actor) {
+    if (!wrapper) return;
+    const requestedStyle = String(foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_STYLE) || "none");
+    const style = PORTRAIT_FRAME_STYLES.has(requestedStyle) ? requestedStyle : "none";
+    const image = String(foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_IMAGE) || "").trim();
+    const paddingValue = Number(foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_PADDING));
+    const padding = Number.isFinite(paddingValue) ? Math.max(0, Math.min(20, paddingValue)) : 5;
+    const fit = foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_FIT) === "cover" ? "cover" : "contain";
+
+    for (const frameStyle of PORTRAIT_FRAME_STYLES) wrapper.classList.remove(`ginzzzu-frame-${frameStyle}`);
+    wrapper.classList.add(`ginzzzu-frame-${style}`);
+    wrapper.classList.toggle("ginzzzu-portrait-framed", style !== "none");
+    wrapper.style.setProperty("--ginzzzu-frame-padding", `${padding}%`);
+    wrapper.style.setProperty("--ginzzzu-frame-fit", fit);
+    if (style === "custom" && image) {
+      const escapedImage = image.replace(/["\\\n\r]/g, "");
+      wrapper.style.setProperty("--ginzzzu-frame-image", `url("${escapedImage}")`);
+    } else {
+      wrapper.style.removeProperty("--ginzzzu-frame-image");
+    }
   }
 
   // ---- Adaptive tone (по темноте сцены) ----
@@ -2759,6 +2783,7 @@ function _onPortraitClick(ev) {
         wrapper.dataset.rawName = rawName;
         wrapper.dataset.displayName = safeName;
         wrapper.dataset.src = img;  // Сохраняем src на wrapper для сравнения
+        _applyPortraitFrame(wrapper, game.actors?.get(actorId));
 
         // позволяем кликать по портрету
         Object.assign(wrapper.style, {
@@ -3398,8 +3423,12 @@ Hooks.once("ready", () => {
       const emotionHeightMultiplierChanged = foundry.utils.hasProperty(changes, FLAG_EMOTION_HEIGHT_MULTIPLIER);
       const customImageChanged = foundry.utils.hasProperty(changes, FLAG_PORTRAIT_CUSTOM_IMAGE);
       const breathingMultiplierChanged = foundry.utils.hasProperty(changes, FLAG_PORTRAIT_BREATHING_MULTIPLIER);
+      const frameChanged = [FLAG_PORTRAIT_FRAME_STYLE, FLAG_PORTRAIT_FRAME_IMAGE, FLAG_PORTRAIT_FRAME_PADDING, FLAG_PORTRAIT_FRAME_FIT]
+        .some(path => foundry.utils.hasProperty(changes, path));
 
-      if (!emotionChanged && !customEmotionsChanged && !heightMultiplierChanged && !emotionHeightMultiplierChanged && !customImageChanged && !breathingMultiplierChanged) return;
+      if (!emotionChanged && !customEmotionsChanged && !heightMultiplierChanged && !emotionHeightMultiplierChanged && !customImageChanged && !breathingMultiplierChanged && !frameChanged) return;
+
+      if (frameChanged) _applyPortraitFrame(wrapper, actor);
 
       const imgEl = wrapper.querySelector("img.ginzzzu-portrait");
       if (!imgEl) return;

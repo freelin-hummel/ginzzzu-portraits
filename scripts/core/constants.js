@@ -15,6 +15,10 @@ export const FLAG_PORTRAIT_HEIGHT_MULTIPLIER = `${FLAG_MODULE}.portraitHeightMul
 export const FLAG_EMOTION_HEIGHT_MULTIPLIER = `${FLAG_MODULE}.emotionHeightMultiplier`;
 export const FLAG_PORTRAIT_CUSTOM_IMAGE   = `${FLAG_MODULE}.portraitCustomImage`;
 export const FLAG_PORTRAIT_BREATHING_MULTIPLIER = `${FLAG_MODULE}.portraitBreathingMultiplier`;
+export const FLAG_PORTRAIT_FRAME_STYLE     = `${FLAG_MODULE}.frameStyle`;
+export const FLAG_PORTRAIT_FRAME_IMAGE     = `${FLAG_MODULE}.frameImage`;
+export const FLAG_PORTRAIT_FRAME_PADDING   = `${FLAG_MODULE}.framePadding`;
+export const FLAG_PORTRAIT_FRAME_FIT       = `${FLAG_MODULE}.frameFit`;
 
 // --------------------------------------------
 // 1) СПИСОК ЦВЕТОВ (цветкоры)

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Portrait Frame Review</title>
+    <link rel="stylesheet" href="../../styles/portraits.css">
+    <style>
+      body { margin: 0; min-height: 100vh; background: #11171b; color: #e8f1f2; font: 14px sans-serif; }
+      h1 { margin: 24px 32px 0; font-size: 18px; }
+      #ginzzzu-portrait-layer { position: relative; height: 700px; display: flex; align-items: center; justify-content: center; gap: 24px; }
+      .sample { display: grid; gap: 10px; text-align: center; }
+      .ginzzzu-portrait-wrapper { position: relative; width: 210px; height: 430px; }
+      .ginzzzu-portrait-wrapper > img { inset: 0; transform: none; }
+    </style>
+  </head>
+  <body>
+    <h1>Starter portrait frames</h1>
+    <div id="ginzzzu-portrait-layer">
+      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-minimal" style="--ginzzzu-frame-padding:5%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Minimal"></div><span>Minimal</span></div>
+      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-tech" style="--ginzzzu-frame-padding:6%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Tech"></div><span>Tech</span></div>
+      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-target" style="--ginzzzu-frame-padding:9%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Target"></div><span>Target</span></div>
+      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-amber" style="--ginzzzu-frame-padding:6%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Amber"></div><span>Amber</span></div>
+    </div>
+  </body>
+</html>

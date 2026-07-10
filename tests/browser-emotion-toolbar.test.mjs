@@ -34,3 +34,19 @@ test("emotion toolbar renders the final queued selection", (t) => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /data-status="pass"/);
 });
+
+test("starter portrait frames render around fitted images", (t) => {
+  const chromium = chromiumExecutable();
+  if (!chromium) t.skip("Chromium is not installed");
+
+  const harness = pathToFileURL(path.join(repoRoot, "tests", "browser", "portrait-frames.html")).href;
+  const result = spawnSync(chromium, [
+    "--headless", "--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage",
+    "--allow-file-access-from-files", "--window-size=1280,800", "--dump-dom", harness
+  ], { cwd: repoRoot, encoding: "utf8", timeout: 30000 });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  for (const frame of ["minimal", "tech", "target", "amber"]) {
+    assert.match(result.stdout, new RegExp(`ginzzzu-frame-${frame}`));
+  }
+});

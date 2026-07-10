@@ -35,6 +35,38 @@
     <p class="notes">{{portraitCustomImageHint}}</p>
   </div>
 
+  <section class="portrait-frame-section">
+    <h3>Portrait frame</h3>
+    <div class="portrait-frame-grid">
+      <div class="form-group">
+        <label>Border</label>
+        <select name="frameStyle">
+          {{#each frameOptions}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Image fit</label>
+        <select name="frameFit">
+          {{#each frameFitOptions}}<option value="{{value}}" {{#if selected}}selected{{/if}}>{{label}}</option>{{/each}}
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Custom transparent frame</label>
+      <div class="form-fields">
+        <input type="text" name="frameImage" value="{{frameImage}}" placeholder="path/to/frame.png" />
+        <button type="button" class="file-picker portrait-frame-image-picker" title="Choose frame image"><i class="fas fa-file-import"></i></button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Image inset</label>
+      <div class="form-fields">
+        <input type="range" name="framePadding" value="{{framePadding}}" min="0" max="20" step="1" />
+        <output class="frame-padding-output">{{framePadding}}%</output>
+      </div>
+    </div>
+  </section>
+
   <!-- Глобальная высота портрета -->
   <div class="form-group portrait-height-multiplier-section">
     <label>{{portraitHeightMultiplierLabel}}</label>
