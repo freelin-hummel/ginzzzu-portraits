@@ -4,6 +4,7 @@ import {
   PORTRAIT_KEYBINDINGS,
   isPortraitControlKeyActive
 } from "../keybindings.js";
+import { fittedFrameWidth } from "../core/frame-geometry.js";
 
 
 var __defProp = Object.defineProperty;
@@ -2570,6 +2571,16 @@ function _onPortraitClick(ev) {
       }
 
       const finalHeight = effectivePorHeight * heightMultiplier;
+      const renderedHeightPx = viewportH * finalHeight;
+      const isFramed = wrapper.classList.contains("ginzzzu-portrait-framed");
+      const fittedWidthPx = isFramed
+        ? fittedFrameWidth({
+            naturalWidth: el.naturalWidth,
+            naturalHeight: el.naturalHeight,
+            renderedHeight: renderedHeightPx,
+            slotWidth: widthPx
+          })
+        : widthPx;
       
       // Вычисляем offset для компенсации изменения высоты портрета
       // Базовая высота (при heightMultiplier = 1): effectivePorHeight
@@ -2581,8 +2592,8 @@ function _onPortraitClick(ev) {
       
       wrapper.style.height    = `${finalHeight * 100}vh`;
       wrapper.style.maxHeight = `${finalHeight * 100}vh`;
-      wrapper.style.width     = `${widthPx}px`;
-      wrapper.style.maxWidth  = `${widthPx}px`;
+      wrapper.style.width     = `${fittedWidthPx}px`;
+      wrapper.style.maxWidth  = `${fittedWidthPx}px`;
       wrapper.style.flex      = "0 0 auto";
       wrapper.style.marginLeft = (i === 0) ? "0px" : `${gapPx}px`;
 
@@ -3057,6 +3068,7 @@ function _onPortraitClick(ev) {
         const actorIdForMap = preparedImg.dataset.actorId || imgEl.dataset.actorId;
         if (actorIdForMap) domStore().set(actorIdForMap, activeImg);
         if (wrapper.dataset[lockKey] === token) delete wrapper.dataset[lockKey];
+        relayoutDomHud();
         return;
       }
 
@@ -3222,6 +3234,7 @@ function _onPortraitClick(ev) {
 
       // Clear lock token
       if (wrapper.dataset[lockKey] === token) delete wrapper.dataset[lockKey];
+      relayoutDomHud();
     }
 
   // ---- Реакция всех клиентов на смену флага актёра ----
@@ -3455,6 +3468,10 @@ Hooks.once("ready", () => {
 
       // If height multiplier changed, trigger relayout
       if (heightMultiplierChanged || emotionHeightMultiplierChanged) {
+        relayoutDomHud();
+      }
+
+      if (emotionChanged || customImageChanged || frameChanged) {
         relayoutDomHud();
       }
 
