@@ -1,7 +1,7 @@
 {
   "name": "ginzzzu-portraits",
   "private": true,
-  "version": "2.1.0",
+  "version": "2.1.1",
   "type": "module",
   "scripts": {
     "check": "find scripts -name '*.js' -print0 | xargs -0 -n1 node --check",
