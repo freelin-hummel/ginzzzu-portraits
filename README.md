@@ -3,6 +3,39 @@
 ![Image](./preview.webp)
 
 # Ginzzzu's Portraits & NPC Dock
+
+This Thilke fork keeps the upstream module ID and actor flags so it can replace
+the existing installation without changing world data. The fork source and
+release artifacts are published at:
+
+https://github.com/freelin-hummel/ginzzzu-portraits
+
+## Local review
+
+From this repository:
+
+```sh
+npm test
+npm run check
+npm run foundry:review
+```
+
+The local review runner mounts this checkout into a Foundry 14 instance. Use
+the direct port or the managed `ginzzzu-portraits-review.localhost` URL shown
+by the runner.
+
+## Deployment
+
+The module can be deployed to the main, Lancer, and Troika Foundry data roots:
+
+```sh
+npm run deploy:main
+npm run deploy:lancer
+npm run deploy:troika
+```
+
+Restart the affected Foundry group after deployment so Foundry reloads the
+module manifest and scripts.
 A system-agnostic Foundry VTT module that brings a cinematic layer to your Foundry VTT games.
 It displays character and NPC portraits directly on screen — much like a visual novel or dialogue-driven RPG. 
 
@@ -21,7 +54,7 @@ The module provides:
 This module integrates seamlessly with other Foundry features and can be used both for roleplay storytelling and combat visualization for any gaming system.
 
 ## Installation
-1. Copy https://github.com/Oxy949/ginzzzu-portraits/releases/latest/download/module.json
+1. Copy https://github.com/freelin-hummel/ginzzzu-portraits/releases/latest/download/module.json
 2. Paste it in your Foundry VTT, wait for install
 3. Enable the module in your world
 4. Enjoy!

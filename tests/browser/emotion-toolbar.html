@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Emotion Toolbar Review</title>
+    <link rel="stylesheet" href="../../styles/emotions.css">
+    <style>
+      body { margin: 0; min-height: 100vh; overflow: hidden; background: #182027; font-family: sans-serif; }
+      #ginzzzu-portrait-layer { position: relative; height: 100vh; display: flex; align-items: end; justify-content: center; padding-bottom: 56px; }
+      .ginzzzu-portrait-wrapper { position: relative; width: 270px; height: 450px; }
+      .ginzzzu-portrait { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      .threeo-emo-toolbar { opacity: 1 !important; pointer-events: auto !important; }
+      .threeo-emo-emoji { color: #f7f7f7; }
+      #result { position: absolute; top: 16px; left: 16px; color: #e8f5ed; }
+    </style>
+  </head>
+  <body>
+    <output id="result" data-status="pending">Checking emotion selection...</output>
+    <div id="ginzzzu-portrait-layer">
+      <div class="ginzzzu-portrait-wrapper threeo-emo-pos-top" data-actor-id="actor">
+        <img class="ginzzzu-portrait" alt="Portrait" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='270' height='450'%3E%3Crect width='100%25' height='100%25' fill='%23364d5d'/%3E%3Ccircle cx='135' cy='160' r='82' fill='%23e0af7e'/%3E%3Cpath d='M38 450 Q135 250 232 450' fill='%235d7891'/%3E%3C/svg%3E">
+        <div class="threeo-emo-toolbar">
+          <button class="threeo-emo-btn" data-emo="joy"><span class="threeo-emo-emoji">&#x1F60A;</span></button>
+          <button class="threeo-emo-btn" data-emo="anger"><span class="threeo-emo-emoji">&#x1F620;</span></button>
+          <button class="threeo-emo-btn" data-emo="sad"><span class="threeo-emo-emoji">&#x1F622;</span></button>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+      import { createEmotionUpdateCoordinator } from "../../scripts/core/emotion-selection.js";
+
+      const wrapper = document.querySelector(".ginzzzu-portrait-wrapper");
+      const result = document.querySelector("#result");
+      const coordinator = createEmotionUpdateCoordinator();
+      const emotionClasses = {
+        joy: ["emo-joy-color", "emo-bob-motion"],
+        anger: ["emo-anger-color", "emo-shake-motion"],
+        sad: ["emo-sad-color", "emo-sag-motion"]
+      };
+
+      function apply(key) {
+        for (const name of Array.from(wrapper.classList)) {
+          if (name.startsWith("emo-")) wrapper.classList.remove(name);
+        }
+        wrapper.classList.add(...(emotionClasses[key] || []));
+        for (const button of document.querySelectorAll(".threeo-emo-btn")) {
+          button.classList.toggle("is-active", button.dataset.emo === key);
+        }
+      }
+
+      try {
+        const writes = [];
+        const joy = coordinator.request("actor", "joy", async () => writes.push("joy"));
+        const anger = coordinator.request("actor", "anger", async () => writes.push("anger"));
+        apply("anger");
+        await Promise.all([joy, anger]);
+
+        const finalImage = wrapper.querySelector("img");
+        const finalButton = document.querySelector("[data-emo='anger']");
+        if (writes.join(",") !== "anger") throw new Error(`unexpected writes: ${writes.join(",")}`);
+        if (!wrapper.classList.contains("emo-anger-color") || !wrapper.classList.contains("emo-shake-motion")) {
+          throw new Error("anger classes were not retained");
+        }
+        if (!finalButton.classList.contains("is-active") || !finalImage.complete) {
+          throw new Error("final visual state was not rendered");
+        }
+
+        result.dataset.status = "pass";
+        result.textContent = "Emotion selection: anger";
+      } catch (error) {
+        result.dataset.status = "fail";
+        result.textContent = error.message;
+      }
+    </script>
+  </body>
+</html>

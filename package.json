@@ -1,0 +1,15 @@
+{
+  "name": "ginzzzu-portraits",
+  "private": true,
+  "version": "2.0.1",
+  "type": "module",
+  "scripts": {
+    "check": "find scripts -name '*.js' -print0 | xargs -0 -n1 node --check",
+    "test": "node --test tests/*.test.mjs",
+    "deploy:main": "rsync -av --delete --exclude='.git' --exclude='dev/' . thilke:/mnt/HC_Volume_105485887/projects/foundry/main/data/Data/modules/ginzzzu-portraits/",
+    "deploy:lancer": "rsync -av --delete --exclude='.git' --exclude='dev/' . thilke:/mnt/HC_Volume_105485887/projects/foundry/lancer/data/Data/modules/ginzzzu-portraits/",
+    "deploy:troika": "rsync -av --delete --exclude='.git' --exclude='dev/' . thilke:/mnt/HC_Volume_105485887/projects/foundry/troika/data/Data/modules/ginzzzu-portraits/",
+    "foundry:install": "node ../thilke-server/scripts/foundry-container-runner.mjs install --repo ginzzzu-portraits",
+    "foundry:review": "node ../thilke-server/scripts/foundry-container-runner.mjs run --repo ginzzzu-portraits --instance review --world litd"
+  }
+}

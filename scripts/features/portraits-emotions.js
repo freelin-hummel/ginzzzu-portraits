@@ -1,4 +1,5 @@
 import { MODULE_ID, FLAG_PORTRAIT_EMOTION, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_CUSTOM_EMOTIONS, FLAG_EMOTION_HEIGHT_MULTIPLIER, FLAG_PORTRAIT_HEIGHT_MULTIPLIER, EMOTION_COLORS, EMOTIONS, EMOTION_MOTIONS } from "../core/constants.js";
+import { createEmotionUpdateCoordinator } from "../core/emotion-selection.js";
 
 
 /**
@@ -6,6 +7,8 @@ import { MODULE_ID, FLAG_PORTRAIT_EMOTION, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_CUS
  * Флаги те же, что и у free-слоя: flags.<systemId>.portraitEmotion
  */
 (() => {
+  const emotionUpdates = createEmotionUpdateCoordinator();
+
   // Встроенные эмоции
   const EMO = {
     none:  { key:"none",  label:"None", emoji:"✖", className:"", animation: "none", colorIntensity: "high" },
@@ -180,6 +183,15 @@ import { MODULE_ID, FLAG_PORTRAIT_EMOTION, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_CUS
     return game.i18n.localize(`GINZZZUPORTRAITS.PortraitToolbar.${label}`);
   }
 
+  function _escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
 
   function _buildEmotionToolbarHTML(actor) {
     const allEmotions = _getAllEmotionsForActor(actor);
@@ -189,8 +201,8 @@ import { MODULE_ID, FLAG_PORTRAIT_EMOTION, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_CUS
       .map(key => {
         const e = allEmotions[key];
         return `
-          <button class="threeo-emo-btn" data-emo="${e.key}" title="${_i18nEmoji(e.label, e.isCustom)}">
-            <span class="threeo-emo-emoji">${e.emoji}</span>
+          <button class="threeo-emo-btn" data-emo="${_escapeHtml(e.key)}" title="${_escapeHtml(_i18nEmoji(e.label, e.isCustom))}">
+            <span class="threeo-emo-emoji">${_escapeHtml(e.emoji)}</span>
           </button>
         `;
       })
@@ -340,7 +352,8 @@ import { MODULE_ID, FLAG_PORTRAIT_EMOTION, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_CUS
           if (!btn) return;
 
           const clickedKey = String(btn.dataset.emo || "none");
-          const currentKey = _getActorEmotionKey(actor);
+          const actorIdForUpdate = String(actorId);
+          const currentKey = emotionUpdates.get(actorIdForUpdate, _getActorEmotionKey(actor));
           const nextKey = (clickedKey === currentKey) ? "none" : clickedKey;
 
           const allEmotions = _getAllEmotionsForActor(actor);
@@ -353,25 +366,19 @@ import { MODULE_ID, FLAG_PORTRAIT_EMOTION, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_CUS
 
           _applyEmotionClasses(wrap, def.key, actor);
 
-          try {
-            const updateData = {
-              [FLAG_PORTRAIT_EMOTION]: newFlagValue
-            };
+          const updateData = {
+            [FLAG_PORTRAIT_EMOTION]: newFlagValue,
+            [FLAG_EMOTION_HEIGHT_MULTIPLIER]: def.key === "none"
+              ? null
+              : (def.heightMultiplier !== undefined ? def.heightMultiplier : 1)
+          };
 
-            // Устанавливаем высоту эмоции в отдельный флаг
-            // Если эмоция "none", то очищаем флаг высоты эмоции (будет использоваться индивидуальная высота портрета)
-            if (def.key === "none") {
-              // При выходе из эмоции удаляем флаг высоты эмоции, устанавливая его в -1 (специальное значение для удаления)
-              updateData[FLAG_EMOTION_HEIGHT_MULTIPLIER] = null;
-            } else {
-              const heightMultiplier = def.heightMultiplier !== undefined ? def.heightMultiplier : 1;
-              updateData[FLAG_EMOTION_HEIGHT_MULTIPLIER] = heightMultiplier;
-            }
-            
-            await actor.update(updateData);
-          } catch (e) {
-            console.error("[GinzzzuPortraitEmotions] failed to update portraitEmotion", e);
-          }
+          emotionUpdates.request(actorIdForUpdate, def.key, () => actor.update(updateData))
+            .catch((error) => {
+              emotionUpdates.clear(actorIdForUpdate, def.key);
+              applyEmotionToHudDom(actorIdForUpdate);
+              console.error("[GinzzzuPortraitEmotions] failed to update portraitEmotion", error);
+            });
         });
       }
 
@@ -380,6 +387,7 @@ import { MODULE_ID, FLAG_PORTRAIT_EMOTION, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_CUS
       bar.innerHTML = _buildEmotionToolbarHTML(actor);
       
       // Конфиг портрета — только для ГМа
+      bar.querySelector(".threeo-emo-config")?.remove();
       if (game.user.isGM) {
         const configBtn = document.createElement("button");
         configBtn.classList.add("threeo-emo-btn", "threeo-emo-config");
@@ -449,6 +457,7 @@ import { MODULE_ID, FLAG_PORTRAIT_EMOTION, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_CUS
     }
 
     if (hasEmotionChange) {
+      emotionUpdates.clearIfMatches(actor.id, _getActorEmotionKey(actor));
       applyEmotionToHudDom(actor.id);
     }
   });
