@@ -1,4 +1,4 @@
-import { MODULE_ID, FLAG_PORTRAIT_EMOTION, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_CUSTOM_EMOTIONS, FLAG_EMOTION_HEIGHT_MULTIPLIER, FLAG_PORTRAIT_HEIGHT_MULTIPLIER, EMOTION_COLORS, EMOTIONS, EMOTION_MOTIONS } from "../core/constants.js";
+import { MODULE_ID, FLAG_PORTRAIT_EMOTION, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_CUSTOM_EMOTIONS, FLAG_EMOTION_HEIGHT_MULTIPLIER, FLAG_PORTRAIT_HEIGHT_MULTIPLIER, FLAG_PORTRAIT_CUSTOM_IMAGE, EMOTION_COLORS, EMOTIONS, EMOTION_MOTIONS } from "../core/constants.js";
 import { createEmotionUpdateCoordinator } from "../core/emotion-selection.js";
 
 
@@ -366,17 +366,27 @@ import { createEmotionUpdateCoordinator } from "../core/emotion-selection.js";
 
           _applyEmotionClasses(wrap, def.key, actor);
 
+          const selectedImage = def.key === "none"
+            ? foundry.utils.getProperty(actor, FLAG_PORTRAIT_CUSTOM_IMAGE)
+            : def.imagePath;
+          globalThis.GinzzzuPortraits?.refreshActorPortraitImage?.(actorIdForUpdate, selectedImage);
+
           const updateData = {
-            [FLAG_PORTRAIT_EMOTION]: newFlagValue,
-            [FLAG_EMOTION_HEIGHT_MULTIPLIER]: def.key === "none"
-              ? null
-              : (def.heightMultiplier !== undefined ? def.heightMultiplier : 1)
+            flags: {
+              [MODULE_ID]: {
+                portraitEmotion: newFlagValue,
+                emotionHeightMultiplier: def.key === "none"
+                  ? null
+                  : (def.heightMultiplier !== undefined ? def.heightMultiplier : 1)
+              }
+            }
           };
 
           emotionUpdates.request(actorIdForUpdate, def.key, () => actor.update(updateData))
             .catch((error) => {
               emotionUpdates.clear(actorIdForUpdate, def.key);
               applyEmotionToHudDom(actorIdForUpdate);
+              globalThis.GinzzzuPortraits?.refreshActorPortraitImage?.(actorIdForUpdate);
               console.error("[GinzzzuPortraitEmotions] failed to update portraitEmotion", error);
             });
         });

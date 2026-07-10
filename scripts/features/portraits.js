@@ -3366,6 +3366,19 @@ Hooks.once("ready", () => {
     console.error(e);
   }
 
+  function refreshActorPortraitImage(actorId, src = null) {
+    const root = getDomHud?.();
+    const wrapper = root?.querySelector?.(`.ginzzzu-portrait-wrapper[data-actor-id="${actorId}"]`);
+    const imgEl = wrapper?.querySelector?.("img.ginzzzu-portrait");
+    if (!wrapper || !imgEl) return Promise.resolve(false);
+
+    const actor = game.actors?.get(actorId);
+    const nextSrc = typeof src === "string" && src.trim() ? src.trim() : _getActorImage(actor);
+    if (!nextSrc) return Promise.resolve(false);
+
+    return _applyEmotionImageWithTransition(wrapper, imgEl, nextSrc).then(() => true);
+  }
+
     // React to emotion / customEmotions changes to keep portrait image in sync with active emotion
   Hooks.on("updateActor", (actor, changes) => {
     try {
@@ -3756,6 +3769,7 @@ Hooks.once("ready", () => {
     if (typeof src !== "string" || !src.trim()) return;
     _preloadImage(src.trim(), 10000).catch(() => {});
   },
+  refreshActorPortraitImage,
   closeAllLocalPortraits,
   getActivePortraits,
   applyPortraitBreathing,
