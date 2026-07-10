@@ -49,4 +49,5 @@ test("starter portrait frames render around fitted images", (t) => {
   for (const frame of ["minimal", "tech", "target", "amber"]) {
     assert.match(result.stdout, new RegExp(`ginzzzu-frame-${frame}`));
   }
+  assert.match(result.stdout, /data-frame-status="pass"/);
 });

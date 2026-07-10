@@ -52,7 +52,7 @@
       </div>
     </div>
     <div class="form-group">
-      <label>Custom transparent frame</label>
+      <label>Custom nine-slice frame</label>
       <div class="form-fields">
         <input type="text" name="frameImage" value="{{frameImage}}" placeholder="path/to/frame.png" />
         <button type="button" class="file-picker portrait-frame-image-picker" title="Choose frame image"><i class="fas fa-file-import"></i></button>
@@ -62,7 +62,23 @@
       <label>Image inset</label>
       <div class="form-fields">
         <input type="range" name="framePadding" value="{{framePadding}}" min="0" max="20" step="1" />
-        <output class="frame-padding-output">{{framePadding}}%</output>
+        <output data-for="framePadding">{{framePadding}}%</output>
+      </div>
+    </div>
+    <div class="portrait-frame-grid">
+      <div class="form-group">
+        <label>Border width</label>
+        <div class="form-fields">
+          <input type="range" name="frameWidth" value="{{frameWidth}}" min="2" max="48" step="1" />
+          <output data-for="frameWidth">{{frameWidth}}px</output>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Custom slice</label>
+        <div class="form-fields">
+          <input type="range" name="frameSlice" value="{{frameSlice}}" min="1" max="49" step="1" />
+          <output data-for="frameSlice">{{frameSlice}}%</output>
+        </div>
       </div>
     </div>
   </section>

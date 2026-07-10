@@ -20,7 +20,7 @@
   gap: 12px;
 }
 
-.ginzzzu-portrait-config .frame-padding-output {
+.ginzzzu-portrait-config .portrait-frame-section output {
   flex: 0 0 44px;
   text-align: right;
 }

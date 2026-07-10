@@ -19,6 +19,8 @@ export const FLAG_PORTRAIT_FRAME_STYLE     = `${FLAG_MODULE}.frameStyle`;
 export const FLAG_PORTRAIT_FRAME_IMAGE     = `${FLAG_MODULE}.frameImage`;
 export const FLAG_PORTRAIT_FRAME_PADDING   = `${FLAG_MODULE}.framePadding`;
 export const FLAG_PORTRAIT_FRAME_FIT       = `${FLAG_MODULE}.frameFit`;
+export const FLAG_PORTRAIT_FRAME_SLICE     = `${FLAG_MODULE}.frameSlice`;
+export const FLAG_PORTRAIT_FRAME_WIDTH     = `${FLAG_MODULE}.frameWidth`;
 
 // --------------------------------------------
 // 1) СПИСОК ЦВЕТОВ (цветкоры)

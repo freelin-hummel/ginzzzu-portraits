@@ -9,17 +9,33 @@
       h1 { margin: 24px 32px 0; font-size: 18px; }
       #ginzzzu-portrait-layer { position: relative; height: 700px; display: flex; align-items: center; justify-content: center; gap: 24px; }
       .sample { display: grid; gap: 10px; text-align: center; }
-      .ginzzzu-portrait-wrapper { position: relative; width: 210px; height: 430px; }
+      .ginzzzu-portrait-wrapper { position: relative; }
       .ginzzzu-portrait-wrapper > img { inset: 0; transform: none; }
     </style>
   </head>
   <body>
     <h1>Starter portrait frames</h1>
     <div id="ginzzzu-portrait-layer">
-      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-minimal" style="--ginzzzu-frame-padding:5%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Minimal"></div><span>Minimal</span></div>
-      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-tech" style="--ginzzzu-frame-padding:6%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Tech"></div><span>Tech</span></div>
-      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-target" style="--ginzzzu-frame-padding:9%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Target"></div><span>Target</span></div>
-      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-amber" style="--ginzzzu-frame-padding:6%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Amber"></div><span>Amber</span></div>
+      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-minimal" style="width:180px;height:430px;--ginzzzu-frame-width:16px;--ginzzzu-frame-padding:5%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Steel corners"></div><span>Steel / tall</span></div>
+      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-tech" style="width:280px;height:280px;--ginzzzu-frame-width:16px;--ginzzzu-frame-padding:6%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Cyan circuit"></div><span>Circuit / square</span></div>
+      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-target" style="width:360px;height:220px;--ginzzzu-frame-width:16px;--ginzzzu-frame-padding:7%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Reticle"></div><span>Reticle / wide</span></div>
+      <div class="sample"><div class="ginzzzu-portrait-wrapper ginzzzu-portrait-framed ginzzzu-frame-amber" style="width:220px;height:360px;--ginzzzu-frame-width:16px;--ginzzzu-frame-padding:6%;--ginzzzu-frame-fit:cover"><img class="ginzzzu-portrait" src="portrait.svg" alt="Amber warning"></div><span>Warning / portrait</span></div>
     </div>
+    <output id="frame-status" data-frame-status="pending" hidden></output>
+    <script>
+      window.addEventListener("load", () => {
+        const frames = [...document.querySelectorAll(".ginzzzu-portrait-wrapper")];
+        const painted = frames.every(frame => {
+          const style = getComputedStyle(frame, "::before");
+          return style.borderImageSource !== "none" && parseFloat(style.borderTopWidth) > 0;
+        });
+        const output = document.querySelector("#frame-status");
+        output.dataset.frameStatus = painted ? "pass" : "fail";
+        output.textContent = frames.map(frame => {
+          const style = getComputedStyle(frame, "::before");
+          return `${style.borderImageSource}|${style.borderTopWidth}`;
+        }).join(";");
+      });
+    </script>
   </body>
 </html>

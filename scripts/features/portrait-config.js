@@ -1,5 +1,5 @@
 // features/portraitConfig.js
-import { MODULE_ID, FLAG_DISPLAY_NAME, FLAG_CUSTOM_EMOTIONS, EMOTION_MOTIONS, EMOTION_COLORS, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_PORTRAIT_HEIGHT_MULTIPLIER, FLAG_PORTRAIT_CUSTOM_IMAGE, FLAG_PORTRAIT_BREATHING_MULTIPLIER, FLAG_PORTRAIT_FRAME_STYLE, FLAG_PORTRAIT_FRAME_IMAGE, FLAG_PORTRAIT_FRAME_PADDING, FLAG_PORTRAIT_FRAME_FIT } from "../core/constants.js";
+import { MODULE_ID, FLAG_DISPLAY_NAME, FLAG_CUSTOM_EMOTIONS, EMOTION_MOTIONS, EMOTION_COLORS, FLAG_SHOW_STANDARD_EMOTIONS, FLAG_PORTRAIT_HEIGHT_MULTIPLIER, FLAG_PORTRAIT_CUSTOM_IMAGE, FLAG_PORTRAIT_BREATHING_MULTIPLIER, FLAG_PORTRAIT_FRAME_STYLE, FLAG_PORTRAIT_FRAME_IMAGE, FLAG_PORTRAIT_FRAME_PADDING, FLAG_PORTRAIT_FRAME_FIT, FLAG_PORTRAIT_FRAME_SLICE, FLAG_PORTRAIT_FRAME_WIDTH } from "../core/constants.js";
 import { getCustomEmotions } from "./custom-emotions.js";
 
 const PORTRAIT_CONFIG_TEMPLATE = `modules/${MODULE_ID}/templates/portrait-config.hbs`;
@@ -71,9 +71,13 @@ export async function configurePortrait(ev, actorSheet) {
   const framePaddingRaw = Number(foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_PADDING));
   const framePadding = Number.isFinite(framePaddingRaw) ? Math.max(0, Math.min(20, framePaddingRaw)) : 5;
   const frameFit = foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_FIT) === "cover" ? "cover" : "contain";
+  const frameSliceRaw = Number(foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_SLICE));
+  const frameSlice = Number.isFinite(frameSliceRaw) ? Math.max(1, Math.min(49, frameSliceRaw)) : 30;
+  const frameWidthRaw = Number(foundry.utils.getProperty(actor, FLAG_PORTRAIT_FRAME_WIDTH));
+  const frameWidth = Number.isFinite(frameWidthRaw) ? Math.max(2, Math.min(48, frameWidthRaw)) : 16;
   const frameOptions = [
-    ["none", "None"], ["minimal", "Minimal"], ["tech", "Tech"],
-    ["target", "Target"], ["amber", "Amber"], ["custom", "Custom image"]
+    ["none", "None"], ["minimal", "Steel corners"], ["tech", "Cyan circuit"],
+    ["target", "Reticle"], ["amber", "Amber warning"], ["custom", "Custom nine-slice"]
   ].map(([value, label]) => ({ value, label, selected: value === frameStyle }));
   const frameFitOptions = ["contain", "cover"].map(value => ({
     value,
@@ -108,6 +112,8 @@ export async function configurePortrait(ev, actorSheet) {
     frameStyle,
     frameImage,
     framePadding,
+    frameSlice,
+    frameWidth,
     frameOptions,
     frameFitOptions,
     showStandardEmotions,
@@ -193,13 +199,17 @@ export async function configurePortrait(ev, actorSheet) {
               const selectedFrameImage = String(html.find('input[name="frameImage"]').val() || "").trim();
               const selectedFramePadding = Math.max(0, Math.min(20, Number(html.find('input[name="framePadding"]').val()) || 0));
               const selectedFrameFit = html.find('select[name="frameFit"]').val() === "cover" ? "cover" : "contain";
+              const selectedFrameSlice = Math.max(1, Math.min(49, Number(html.find('input[name="frameSlice"]').val()) || 30));
+              const selectedFrameWidth = Math.max(2, Math.min(48, Number(html.find('input[name="frameWidth"]').val()) || 16));
               await actor.update({
                 flags: {
                   [MODULE_ID]: {
                     frameStyle: selectedFrameStyle,
                     frameImage: selectedFrameImage,
                     framePadding: selectedFramePadding,
-                    frameFit: selectedFrameFit
+                    frameFit: selectedFrameFit,
+                    frameSlice: selectedFrameSlice,
+                    frameWidth: selectedFrameWidth
                   }
                 }
               });
@@ -405,8 +415,9 @@ export async function configurePortrait(ev, actorSheet) {
         bindPortraitImagePicker(html);
         bindFrameImagePicker(html);
 
-        html.find('input[name="framePadding"]').on('input change', (e) => {
-          html.find('.frame-padding-output').text(`${Number(e.currentTarget.value) || 0}%`);
+        html.find('.portrait-frame-section input[type="range"]').on('input change', (e) => {
+          const unit = e.currentTarget.name === "frameWidth" ? "px" : "%";
+          html.find(`output[data-for="${e.currentTarget.name}"]`).text(`${Number(e.currentTarget.value) || 0}${unit}`);
         });
 
         // Синхронизация слайдера высоты портрета с отображением значения (двунаправленная)
